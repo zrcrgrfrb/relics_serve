@@ -25,6 +25,23 @@ CREATE TABLE IF NOT EXISTS relics (
     FOREIGN KEY (category_id) REFERENCES relic_categories(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文物表';
 
+-- ============================================================
+-- 管理员用户表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS admin_users (
+    id INT PRIMARY KEY AUTO_INCREMENT COMMENT '管理员ID',
+    username VARCHAR(50) NOT NULL COMMENT '用户名',
+    password VARCHAR(200) NOT NULL COMMENT '密码',
+    role VARCHAR(20) NOT NULL DEFAULT 'administrator' COMMENT '角色',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员用户表';
+
+-- 插入默认管理员（密码：admin123）
+INSERT IGNORE INTO admin_users (id, username, password, role) VALUES
+(1, 'admin', 'admin123', 'administrator');
+
 INSERT IGNORE INTO relic_categories (id, name, description, sort_order) VALUES
 (1, '印信图章', '各类印章、图章文物', 1),
 (2, '旗匾证徽', '旗帜、牌匾、证件、徽章等', 2),

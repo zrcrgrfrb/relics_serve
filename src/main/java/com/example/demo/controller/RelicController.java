@@ -8,6 +8,7 @@ import com.example.demo.entity.RelicCategory;
 import com.example.demo.service.RelicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
@@ -41,10 +42,10 @@ public class RelicController {
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer pageSize) {
         if (type == null || page == null || pageSize == null || page < 1 || pageSize < 1) {
-            return ResponseEntity.ok(ApiResponse.error("invalid parameters"));
+            return ResponseEntity.badRequest().body(ApiResponse.error("invalid parameters"));
         }
         if (relicService.getCategoryById(type) == null) {
-            return ResponseEntity.ok(ApiResponse.error("category not found"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("category not found"));
         }
 
         Page<Relic> relicPage = relicService.getRelicsPage(type, page, pageSize);
@@ -64,27 +65,44 @@ public class RelicController {
     public ResponseEntity<ApiResponse<Relic>> getRelicById(@PathVariable Integer id) {
         Relic relic = relicService.getRelicById(id);
         if (relic == null) {
-            return ResponseEntity.ok(ApiResponse.error("relic not found"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error("relic not found"));
         }
         return ResponseEntity.ok(ApiResponse.ok(relic));
     }
 
     @PostMapping("/relics")
     public ResponseEntity<ApiResponse<Relic>> createRelic(@RequestBody Relic relic) {
-        return ResponseEntity.ok(ApiResponse.ok(relicService.createRelic(relic)));
+        // title 为必填字段
+        if (relic.getTitle() == null || relic.getTitle().isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("参数校验失败：title 为必填字段"));
+        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(relicService.createRelic(relic)));
     }
 
     @PutMapping("/relics/{id}")
     public ResponseEntity<ApiResponse<Relic>> updateRelic(@PathVariable Integer id, @RequestBody Relic relic) {
+        if (relic.getTitle() == null || relic.getTitle().isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("参数校验失败：title 为必填字段"));
+        }
         Relic updatedRelic = relicService.updateRelic(id, relic);
         if (updatedRelic == null) {
-            return ResponseEntity.ok(ApiResponse.error("relic not found"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error("relic not found"));
         }
         return ResponseEntity.ok(ApiResponse.ok(updatedRelic));
     }
 
     @DeleteMapping("/relics/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteRelic(@PathVariable Integer id) {
+        // 先检查资源是否存在
+        if (relicService.getRelicById(id) == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error("relic not found"));
+        }
         relicService.deleteRelic(id);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
@@ -94,6 +112,7 @@ public class RelicController {
             MethodArgumentTypeMismatchException.class
     })
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception ignored) {
-        return ResponseEntity.ok(ApiResponse.error("invalid parameters"));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("invalid parameters"));
     }
 }
