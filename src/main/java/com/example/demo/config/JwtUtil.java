@@ -1,7 +1,10 @@
 package com.example.demo.config;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -11,40 +14,41 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // 生产环境应放入配置文件，这里使用一个固定密钥以便开发调试
-    private static final String SECRET = "ReslicSystemJwtSecretKey2026!@#$%ReslicSystemJwtSecretKey2026!@#$%";
-    private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24小时
-
     private final SecretKey key;
+    private final long expirationMs;
+    private final String issuer;
 
-    public JwtUtil() {
-        this.key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    public JwtUtil(@Value("${app.jwt.secret}") String secret,
+                   @Value("${app.jwt.expiration-ms:7200000}") long expirationMs,
+                   @Value("${app.jwt.issuer:reslic-system}") String issuer) {
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalArgumentException("app.jwt.secret must be at least 32 bytes");
+        }
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expirationMs = expirationMs;
+        this.issuer = issuer;
     }
 
-    /**
-     * 生成 JWT token
-     */
     public String generateToken(String username, String role) {
         Date now = new Date();
         return Jwts.builder()
+                .issuer(issuer)
                 .subject(username)
                 .claim("role", role)
                 .issuedAt(now)
-                .expiration(new Date(now.getTime() + EXPIRATION_MS))
+                .expiration(new Date(now.getTime() + expirationMs))
                 .signWith(key)
                 .compact();
     }
 
-    /**
-     * 从 token 中解析用户名
-     */
     public String getUsernameFromToken(String token) {
         return parseClaims(token).getSubject();
     }
 
-    /**
-     * 校验 token 是否有效
-     */
+    public String getRoleFromToken(String token) {
+        return parseClaims(token).get("role", String.class);
+    }
+
     public boolean validateToken(String token) {
         try {
             parseClaims(token);
@@ -57,6 +61,7 @@ public class JwtUtil {
     private Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)
+                .requireIssuer(issuer)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
