@@ -13,6 +13,7 @@ public interface RelicService {
     Relic getRelicById(Integer id);
     List<Relic> getRelicsByCategory(Integer categoryId);
     Page<Relic> getRelicsPage(Integer categoryId, int page, int pageSize);
+    Page<Relic> searchRelics(String keyword, int page, int pageSize);
     Relic createRelic(Relic relic);
     Relic updateRelic(Integer id, Relic relic);
     void deleteRelic(Integer id);

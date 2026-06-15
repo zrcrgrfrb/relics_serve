@@ -59,6 +59,18 @@ public class RelicServiceImpl implements RelicService {
     }
     
     @Override
+    public Page<Relic> searchRelics(String keyword, int page, int pageSize) {
+        // NOTE: nativeQuery uses actual DB column names, not JPA entity field names.
+        // publish_date (DB) ≠ publishDate (JPA entity)
+        PageRequest pageRequest = PageRequest.of(
+                page - 1,
+                pageSize,
+                Sort.by(Sort.Direction.DESC, "publish_date").and(Sort.by(Sort.Direction.DESC, "id"))
+        );
+        return relicRepository.searchByKeyword(keyword, pageRequest);
+    }
+
+    @Override
     public Relic createRelic(Relic relic) {
         return relicRepository.save(relic);
     }

@@ -61,6 +61,31 @@ public class RelicController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/relics/search")
+    public ResponseEntity<ApiResponse<PageResult<RelicListItem>>> searchRelics(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer pageSize) {
+        if (keyword == null || keyword.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("keyword required"));
+        }
+        if (page == null || pageSize == null || page < 1 || pageSize < 1) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("invalid parameters"));
+        }
+
+        Page<Relic> relicPage = relicService.searchRelics(keyword, page, pageSize);
+        List<RelicListItem> list = relicPage.getContent().stream()
+                .map(RelicListItem::from)
+                .toList();
+        PageResult<RelicListItem> result = new PageResult<>(
+                list,
+                relicPage.getTotalElements(),
+                page,
+                pageSize
+        );
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @GetMapping("/relics/{id}")
     public ResponseEntity<ApiResponse<Relic>> getRelicById(@PathVariable Integer id) {
         Relic relic = relicService.getRelicById(id);
