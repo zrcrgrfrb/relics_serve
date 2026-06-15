@@ -1,21 +1,21 @@
 server:
-  port: 8082
+  port: ${RESLIC_SERVER_PORT:8082}
 
 app:
-  # Optional public origin for generated upload URLs, e.g. https://example.com
+  # 上传图片返回地址使用的公网后端域名，例如 https://api.example.com；本地可留空。
   public-base-url: ${RESLIC_PUBLIC_BASE_URL:}
   upload:
-    dir: uploads
+    dir: ${RESLIC_UPLOAD_DIR:uploads}
   jwt:
     secret: ${RESLIC_JWT_SECRET:ReslicSystemDevJwtSecretKeyChangeMe2026!@#$%ReslicSystemDevJwtSecretKeyChangeMe2026!@#$%}
     expiration-ms: ${RESLIC_JWT_EXPIRATION_MS:7200000}
-    issuer: reslic-system
+    issuer: ${RESLIC_JWT_ISSUER:reslic-system}
   cors:
     allowed-origins: ${RESLIC_CORS_ALLOWED_ORIGINS:http://localhost:8080,http://localhost:8081}
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/relic_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${RESLIC_DB_HOST:localhost}:${RESLIC_DB_PORT:3306}/${RESLIC_DB_NAME:relic_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: ${RESLIC_DB_USERNAME:root}
     password: ${RESLIC_DB_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver

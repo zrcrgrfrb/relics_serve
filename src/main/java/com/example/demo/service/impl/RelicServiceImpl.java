@@ -96,4 +96,9 @@ public class RelicServiceImpl implements RelicService {
     public void deleteRelic(Integer id) {
         relicRepository.deleteById(id);
     }
+
+    @Override
+    public void deleteRelics(List<Integer> ids) {
+        relicRepository.deleteAllById(ids);
+    }
 }

@@ -17,4 +17,5 @@ public interface RelicService {
     Relic createRelic(Relic relic);
     Relic updateRelic(Integer id, Relic relic);
     void deleteRelic(Integer id);
+    void deleteRelics(List<Integer> ids);
 }

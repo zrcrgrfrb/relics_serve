@@ -157,7 +157,9 @@ public class RelicController {
     }
 
     @PutMapping("/relics/{id}")
-    public ResponseEntity<ApiResponse<Relic>> updateRelic(@PathVariable Integer id, @RequestBody Relic relic) {
+    public ResponseEntity<ApiResponse<Relic>> updateRelic(@PathVariable Integer id,
+                                                          @RequestBody Relic relic,
+                                                          HttpServletRequest request) {
         if (relic.getTitle() == null || relic.getTitle().isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("参数校验失败：title 为必填字段"));
@@ -167,6 +169,7 @@ public class RelicController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("relic not found"));
         }
+        fillImageUrl(updatedRelic, request);
         return ResponseEntity.ok(ApiResponse.ok(updatedRelic));
     }
 
@@ -178,6 +181,16 @@ public class RelicController {
                     .body(ApiResponse.error("relic not found"));
         }
         relicService.deleteRelic(id);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    @DeleteMapping("/relics/batch")
+    public ResponseEntity<ApiResponse<Void>> batchDeleteRelics(@RequestBody List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("ids required"));
+        }
+        relicService.deleteRelics(ids);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
