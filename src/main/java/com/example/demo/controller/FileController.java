@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.util.PublicUrlBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,12 @@ public class FileController {
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
+    private final PublicUrlBuilder publicUrlBuilder;
+
+    public FileController(PublicUrlBuilder publicUrlBuilder) {
+        this.publicUrlBuilder = publicUrlBuilder;
+    }
+
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse<String>> uploadFile(@RequestParam("file") MultipartFile file,
                                                           HttpServletRequest request) {
@@ -72,7 +79,7 @@ public class FileController {
             }
 
             file.transferTo(targetPath.toFile());
-            String fileUrl = request.getContextPath() + "/uploads/" + newFilename;
+            String fileUrl = publicUrlBuilder.buildUploadUrl(newFilename, request);
             return ResponseEntity.ok(ApiResponse.ok(fileUrl));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("文件上传失败"));

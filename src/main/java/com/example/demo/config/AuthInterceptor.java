@@ -31,6 +31,9 @@ public class AuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String method = request.getMethod().toUpperCase();
         String uri = request.getRequestURI();
+        if ("POST".equals(method) && "/api/relics/image-search".equals(uri)) {
+            return true;
+        }
         if ("OPTIONS".equals(method) || ("GET".equals(method) && isPublicGet(uri))) {
             return true;
         }

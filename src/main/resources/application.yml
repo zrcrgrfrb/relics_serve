@@ -2,6 +2,8 @@ server:
   port: 8082
 
 app:
+  # Optional public origin for generated upload URLs, e.g. https://example.com
+  public-base-url: ${RESLIC_PUBLIC_BASE_URL:}
   upload:
     dir: uploads
   jwt:
