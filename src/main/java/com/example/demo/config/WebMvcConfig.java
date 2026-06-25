@@ -26,7 +26,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
-                .addPathPatterns("/api/admin/**", "/api/relics", "/api/relics/**", "/api/upload", "/api/upload/**")
+                .addPathPatterns("/api/admin/**", "/api/relics", "/api/relics/**", "/api/upload", "/api/upload/**", "/api/agent/**")
                 .excludePathPatterns("/api/admin/login");
     }
 }
